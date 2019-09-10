@@ -1,33 +1,25 @@
-
 import $ from 'jquery';
-// import {
-//   HungryBear
-// } from './date';
 import 'bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import './styles.css'
+import './styles.css';
+import { WeatherService } from './weather-service';
 
 $(document).ready(function() {
   $('#weatherLocation').click(function() {
     const city = $('#location').val();
     $('#location').val("");
 
-    let request = new XMLHttpRequest();
-    const url = `http://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${process.env.API_KEY}`;
-    request.onreadystatechange = function() {
-      if (this.readyState === 4 && this.status === 200) {
-        const response = JSON.parse(this.responseText);
-        getElements(response);
-        console.log(response);
-      }
-    }
 
-    request.open("GET", url, true);
-    request.send();
+    let weatherService = new WeatherService();  // create instance of WeatherService class
+    let promise = weatherService.getWeatherByCity(city);  // call the instance method and pass in user input
 
-   const getElements = function(response) {
-      $('.showHumidity').text(`The humidity in ${city} is ${response.main.humidity}%`);
-      $('.showTemp').text(`The temperature in Kelvins is ${response.main.temp} degrees.`);
-    }
+    promise.then(function(response) {
+      const body = JSON.parse(response);
+      $('.showHumidity').text(`The humidity in ${city} is ${body.main.humidity}%`);
+      $('.showTemp').text(`The temperature in Kelvins is ${body.main.temp} degrees.`);
+    }, function(error) {
+      $('.showErrors').text(`There was an error processing your request: ${error.message}`);
+    });
   });
+
 });
